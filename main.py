@@ -8,6 +8,8 @@ import json
 from models.lstm_predictor import LSTMPredictor
 from utils.data_processor import get_recent_cpu_data
 import os
+import tensorflow as tf
+import joblib
 
 app = FastAPI()
 
