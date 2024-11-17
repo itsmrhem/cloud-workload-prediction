@@ -27,9 +27,9 @@ class LSTMPredictor:
         model.compile(optimizer='adam', loss='mse')
         return model
     
-    def train(self, csv_path):
-        # Load and preprocess data
-        df = pd.read_csv(csv_path, nrows=1000)  # Load top 1000 rows
+    def train(self):
+        # Load and preprocess data from one folder up
+        df = pd.read_csv('../1.csv', nrows=1000)  # Load top 1000 rows
         data = df['cpu_utilization'].values.reshape(-1, 1)
         
         # Scale data
