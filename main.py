@@ -75,6 +75,10 @@ async def fetch_logs():
             StartTime=datetime.utcnow() - timedelta(hours=1),
             EndTime=datetime.utcnow()
         )
+        
+        print("\n=== CloudWatch Response ===")
+        print(json.dumps(response, indent=2, default=str))
+        print("==========================\n")
 
         return {"success": True, "data": response['MetricDataResults']}
     except Exception as e:
@@ -92,6 +96,7 @@ def get_recent_cpu_data(cloudwatch_client, hours=1):
         numpy array of CPU utilization values
     """
     try:
+        print("\nFetching CPU data from CloudWatch...")
         response = cloudwatch_client.get_metric_data(
             MetricDataQueries=[
                 {
@@ -111,13 +116,24 @@ def get_recent_cpu_data(cloudwatch_client, hours=1):
             EndTime=datetime.utcnow()
         )
         
+        print("\n=== CloudWatch Data Response ===")
+        print(json.dumps(response, indent=2, default=str))
+        print("===============================\n")
+        
         if response['MetricDataResults']:
             values = response['MetricDataResults'][0]['Values']
-            return np.array(values) if values else None
+            if values:
+                print(f"Successfully retrieved {len(values)} CPU utilization values")
+                return np.array(values)
+            else:
+                print("No CPU utilization values found in response")
+                return None
+        print("No MetricDataResults found in response")
         return None
         
     except Exception as e:
-        print(f"Error fetching CloudWatch metrics: {str(e)}")
+        print(f"\nERROR fetching CloudWatch metrics: {str(e)}")
+        print(f"Error type: {type(e).__name__}")
         return None
 
 @app.get("/predict")
