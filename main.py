@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 import boto3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 from models.lstm_predictor_percent import CPUPercentagePredictor as LSTMPredictor
 import os
@@ -65,7 +65,7 @@ async def fetch_logs():
         )
 
         # Get data from 15 months ago (maximum CloudWatch retention) until now
-        start_time = datetime.utcnow() - timedelta(days=455)  # ~15 months
+        start_time = datetime.now(timezone.utc) - timedelta(days=455)  # ~15 months
         response = cloudwatch.get_metric_data(
             MetricDataQueries=[
                 {
@@ -82,7 +82,7 @@ async def fetch_logs():
                 }
             ],
             StartTime=start_time,
-            EndTime=datetime.utcnow()
+            EndTime=datetime.now(timezone.utc)
         )
         
         print("\n=== CloudWatch Response ===")
@@ -120,8 +120,8 @@ def get_recent_cpu_data(cloudwatch_client):
                     'ReturnData': True
                 }
             ],
-            StartTime=datetime.utcnow() - timedelta(days=455),  # ~15 months
-            EndTime=datetime.utcnow()
+            StartTime=datetime.now(timezone.utc) - timedelta(days=455),  # ~15 months
+            EndTime=datetime.now(timezone.utc)
         )
         
         print("\n=== CloudWatch Data Response ===")
