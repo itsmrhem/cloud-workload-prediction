@@ -1,8 +1,7 @@
 import numpy as np 
 import pandas as pd
 from datetime import datetime, timedelta
-import keras
-from keras.models import Sequential
+from tensorflow.keras.models import Sequential 
 from keras.layers import Dense, LSTM, Dropout
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error

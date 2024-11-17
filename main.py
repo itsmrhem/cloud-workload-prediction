@@ -80,7 +80,7 @@ async def fetch_logs():
                             'Namespace': 'AWS/EC2',
                             'MetricName': 'CPUUtilization',
                         },
-                        'Period': 600,
+                        'Period': 300,
                         'Stat': 'Average'
                     },
                     'ReturnData': True
