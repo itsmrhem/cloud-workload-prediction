@@ -40,9 +40,16 @@ async def verify_credentials():
             aws_access_key_id=aws_credentials["access_key"],
             aws_secret_access_key=aws_credentials["secret_key"]
         )
-        ec2.describe_regions()
+        response = ec2.describe_regions()
+        print("\n=== AWS Credential Verification Response ===")
+        print(json.dumps(response, indent=2, default=str))
+        print("========================================\n")
         return {"success": True, "message": "Credentials are valid"}
     except Exception as e:
+        print("\n=== AWS Credential Verification ERROR ===")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        print("=====================================\n")
         return {"success": False, "error": str(e)}
 
 @app.get("/fetch-logs")
@@ -183,18 +190,33 @@ async def launch_instance(ami_id: str = Form(...), instance_type: str = Form(...
             aws_secret_access_key=aws_credentials["secret_key"]
         )
 
+        print("\n=== Launching EC2 Instance ===")
+        print(f"AMI ID: {ami_id}")
+        print(f"Instance Type: {instance_type}")
+        
         response = ec2.run_instances(
             ImageId=ami_id,
             InstanceType=instance_type,
             MinCount=1,
             MaxCount=1
         )
+        
+        print("\n=== EC2 Launch Response ===")
+        print(json.dumps(response, indent=2, default=str))
+        print("==========================\n")
 
+        instance_id = response['Instances'][0]['InstanceId']
+        print(f"Successfully launched instance: {instance_id}")
+        
         return {
             "success": True,
-            "instance_id": response['Instances'][0]['InstanceId']
+            "instance_id": instance_id
         }
     except Exception as e:
+        print("\n=== EC2 Launch ERROR ===")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        print("=====================\n")
         return {"success": False, "error": str(e)}
 
 if __name__ == "__main__":
