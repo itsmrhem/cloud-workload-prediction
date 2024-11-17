@@ -57,6 +57,8 @@ async def fetch_logs():
             aws_secret_access_key=aws_credentials["secret_key"]
         )
 
+        # Get data from 15 months ago (maximum CloudWatch retention) until now
+        start_time = datetime.utcnow() - timedelta(days=455)  # ~15 months
         response = cloudwatch.get_metric_data(
             MetricDataQueries=[
                 {
@@ -72,6 +74,8 @@ async def fetch_logs():
                     'ReturnData': True
                 }
             ],
+            StartTime=start_time,
+            EndTime=datetime.utcnow()
         )
         
         print("\n=== CloudWatch Response ===")
@@ -82,13 +86,12 @@ async def fetch_logs():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def get_recent_cpu_data(cloudwatch_client, hours=1):
+def get_recent_cpu_data(cloudwatch_client):
     """
-    Fetch recent CPU utilization data from CloudWatch
+    Fetch all available CPU utilization data from CloudWatch
     
     Args:
         cloudwatch_client: boto3 CloudWatch client
-        hours: number of hours of historical data to fetch
         
     Returns:
         numpy array of CPU utilization values
@@ -110,7 +113,7 @@ def get_recent_cpu_data(cloudwatch_client, hours=1):
                     'ReturnData': True
                 }
             ],
-            StartTime=datetime.utcnow() - timedelta(hours=hours),
+            StartTime=datetime.utcnow() - timedelta(days=455),  # ~15 months
             EndTime=datetime.utcnow()
         )
         
