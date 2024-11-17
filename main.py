@@ -5,6 +5,9 @@ from fastapi.responses import HTMLResponse, JSONResponse
 import boto3
 from datetime import datetime, timedelta
 import json
+from models.lstm_predictor import LSTMPredictor
+from utils.data_processor import get_recent_cpu_data
+import os
 
 app = FastAPI()
 
@@ -78,10 +81,36 @@ async def fetch_logs():
 @app.get("/predict")
 async def predict():
     try:
+        if not aws_credentials["access_key"] or not aws_credentials["secret_key"]:
+            return {"success": False, "error": "AWS credentials not set"}
+            
+        cloudwatch = boto3.client(
+            'cloudwatch',
+            aws_access_key_id=aws_credentials["access_key"],
+            aws_secret_access_key=aws_credentials["secret_key"]
+        )
+        
+        # Get recent CPU data
+        recent_values = get_recent_cpu_data(cloudwatch)
+        if not recent_values:
+            return {"success": False, "error": "No recent CPU data available"}
+        
+        # Load predictor
+        predictor = LSTMPredictor()
+        if os.path.exists('models/lstm_model.h5'):
+            predictor.model = tf.keras.models.load_model('models/lstm_model.h5')
+            predictor.scaler = joblib.load('models/scaler.save')
+        else:
+            return {"success": False, "error": "Model not trained yet"}
+        
+        # Make prediction
+        predicted_cpu = predictor.predict_next(recent_values)
+        need_new_instance = predicted_cpu > 80.0  # Threshold for new instance
+        
         return {
             "success": True,
-            "need_new_instance": True,
-            "predicted_max_cpu": 85.5
+            "need_new_instance": need_new_instance,
+            "predicted_max_cpu": predicted_cpu
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
