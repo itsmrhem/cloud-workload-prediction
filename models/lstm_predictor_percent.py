@@ -79,7 +79,9 @@ class CPUPercentagePredictor:
             'train_mae': mean_absolute_error(Y_train_inv[0], train_predict[:,0]),
             'train_rmse': np.sqrt(mean_squared_error(Y_train_inv[0], train_predict[:,0])),
             'test_mae': mean_absolute_error(Y_test_inv[0], test_predict[:,0]),
-            'test_rmse': np.sqrt(mean_squared_error(Y_test_inv[0], test_predict[:,0]))
+            'test_rmse': np.sqrt(mean_squared_error(Y_test_inv[0], test_predict[:,0])),
+            'train_accuracy': 100 * (1 - np.mean(np.abs((Y_train_inv[0] - train_predict[:,0]) / Y_train_inv[0]))),
+            'test_accuracy': 100 * (1 - np.mean(np.abs((Y_test_inv[0] - test_predict[:,0]) / Y_test_inv[0])))
         }
         
         # Store predictions for plotting
@@ -168,9 +170,11 @@ if __name__ == "__main__":
     print(f"Training Set Performance:")
     print(f"- Mean Absolute Error: {metrics['train_mae']:.2f}%")
     print(f"- Root Mean Squared Error: {metrics['train_rmse']:.2f}%")
+    print(f"- Accuracy: {metrics['train_accuracy']:.2f}%")
     print(f"\nTest Set Performance:")
     print(f"- Mean Absolute Error: {metrics['test_mae']:.2f}%")
     print(f"- Root Mean Squared Error: {metrics['test_rmse']:.2f}%")
+    print(f"- Accuracy: {metrics['test_accuracy']:.2f}%")
     
     # Make and visualize predictions for next 24 hours
     predictions, timestamps = predictor.predict_next_day()
