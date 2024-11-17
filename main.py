@@ -13,6 +13,8 @@ import numpy as np
 
 app = FastAPI()
 
+region = "eu-north-1"
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
@@ -38,7 +40,8 @@ async def verify_credentials():
         ec2 = boto3.client(
             'ec2',
             aws_access_key_id=aws_credentials["access_key"],
-            aws_secret_access_key=aws_credentials["secret_key"]
+            aws_secret_access_key=aws_credentials["secret_key"],
+            region_name=region
         )
         response = ec2.describe_regions()
         print("\n=== AWS Credential Verification Response ===")
@@ -61,11 +64,12 @@ async def fetch_logs():
         cloudwatch = boto3.client(
             'cloudwatch',
             aws_access_key_id=aws_credentials["access_key"],
-            aws_secret_access_key=aws_credentials["secret_key"]
+            aws_secret_access_key=aws_credentials["secret_key"],
+            region_name=region
+
         )
 
-        # Get data from 15 months ago (maximum CloudWatch retention) until now
-        start_time = datetime.now(timezone.utc) - timedelta(days=455)  # ~15 months
+        start_time = datetime.now(timezone.utc) - timedelta(days=455) 
         response = cloudwatch.get_metric_data(
             MetricDataQueries=[
                 {
@@ -75,7 +79,7 @@ async def fetch_logs():
                             'Namespace': 'AWS/EC2',
                             'MetricName': 'CPUUtilization',
                         },
-                        'Period': 300,
+                        'Period': 600,
                         'Stat': 'Average'
                     },
                     'ReturnData': True
@@ -94,15 +98,6 @@ async def fetch_logs():
         return {"success": False, "error": str(e)}
 
 def get_recent_cpu_data(cloudwatch_client):
-    """
-    Fetch all available CPU utilization data from CloudWatch
-    
-    Args:
-        cloudwatch_client: boto3 CloudWatch client
-        
-    Returns:
-        numpy array of CPU utilization values
-    """
     try:
         print("\nFetching CPU data from CloudWatch...")
         response = cloudwatch_client.get_metric_data(
@@ -114,13 +109,13 @@ def get_recent_cpu_data(cloudwatch_client):
                             'Namespace': 'AWS/EC2',
                             'MetricName': 'CPUUtilization',
                         },
-                        'Period': 300,
+                        'Period': 240,
                         'Stat': 'Average'
                     },
                     'ReturnData': True
                 }
             ],
-            StartTime=datetime.now(timezone.utc) - timedelta(days=455),  # ~15 months
+            StartTime=datetime.now(timezone.utc) - timedelta(days=455),  
             EndTime=datetime.now(timezone.utc)
         )
         
@@ -153,15 +148,15 @@ async def predict():
         cloudwatch = boto3.client(
             'cloudwatch',
             aws_access_key_id=aws_credentials["access_key"],
-            aws_secret_access_key=aws_credentials["secret_key"]
+            aws_secret_access_key=aws_credentials["secret_key"],
+            region_name=region
         )
         
-        # Get recent CPU data
         recent_values = get_recent_cpu_data(cloudwatch)
+        print(recent_values)
         if not recent_values:
             return {"success": False, "error": "No recent CPU data available"}
         
-        # Load predictor
         predictor = LSTMPredictor()
         if os.path.exists('models/lstm_model.h5'):
             predictor.model = tf.keras.models.load_model('models/lstm_model.h5')
@@ -169,9 +164,8 @@ async def predict():
         else:
             return {"success": False, "error": "Model not trained yet"}
         
-        # Make prediction
         predicted_cpu = predictor.predict_next(recent_values)
-        need_new_instance = predicted_cpu > 80.0  # Threshold for new instance
+        need_new_instance = predicted_cpu > 80.0
         
         return {
             "success": True,
