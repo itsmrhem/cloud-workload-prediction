@@ -79,6 +79,27 @@ class CPUPercentagePredictor:
         
         return history, self.metrics
         
+    def predict_next(self, recent_values):
+        """Predict next CPU usage value based on recent values"""
+        if len(recent_values) < self.look_back:
+            raise ValueError(f"Need at least {self.look_back} recent values")
+            
+        # Use the most recent look_back values
+        recent_values = recent_values[-self.look_back:].astype('float32')
+        
+        # Scale the input
+        scaled_sequence = self.scaler.transform(recent_values.reshape(-1, 1))
+        scaled_sequence = scaled_sequence.flatten()
+        
+        # Reshape for LSTM input (samples, time steps, features)
+        sequence = np.reshape(scaled_sequence, (1, 1, len(scaled_sequence)))
+        
+        # Make prediction and inverse transform
+        pred = self.model.predict(sequence, verbose=0)
+        pred = self.scaler.inverse_transform(pred)[0][0]
+        
+        return pred
+        
     def predict_next_day(self, intervals=24):
         df = pd.read_csv('2.csv')
         recent_values = df.cpu_usage.values[-self.look_back:].astype('float32')
