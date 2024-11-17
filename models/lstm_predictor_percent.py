@@ -121,24 +121,12 @@ class CPUPercentagePredictor:
 if __name__ == "__main__":
     predictor = CPUPercentagePredictor()
     history, metrics = predictor.train()
-    plt.figure(figsize=(15,5))
-    plt.subplot(1,2,1)
-    plt.plot(history.history['loss'], label='Train Loss')
-    plt.plot(history.history['val_loss'], label='Test Loss')
-    plt.title('Model Loss During Training')
-    plt.ylabel('Loss')
-    plt.xlabel('Epochs')
-    plt.legend()
-
-    plt.subplot(1,2,2)
-    plt.plot(predictor.Y_test[:100], label='Actual', color='blue')
-    plt.plot(predictor.test_predictions[:100], label='Predicted', color='red')
-    plt.title('Actual vs Predicted Values (First 100 Test Samples)')
-    plt.ylabel('CPU Usage (%)')
-    plt.xlabel('Time Steps')
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
+    
+    # Get the latest prediction
+    df = pd.read_csv('predict/cloudwatch.csv')
+    recent_values = df.cpu_usage.values[-30:].astype('float32')
+    predicted_value = predictor.predict_next(recent_values)
+    print(f"Next 15 minutes prediction: {predicted_value}")
     
     print("\nDetailed Model Performance Metrics:")
     print(f"Training Set Performance:")
