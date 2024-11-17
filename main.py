@@ -81,7 +81,7 @@ async def fetch_logs():
                             'Namespace': 'AWS/EC2',
                             'MetricName': 'CPUUtilization',
                         },
-                        'Period': 300,
+                        'Period': 1,
                         'Stat': 'Average'
                     },
                     'ReturnData': True
@@ -159,7 +159,6 @@ def get_recent_cpu_data(cloudwatch_client):
 @app.get("/predict")
 async def predict():
     try:
-        # Run the LSTM predictor script
         result = subprocess.run(['python', 'models/lstm_predictor_percent.py'], 
                               capture_output=True, 
                               text=True)
@@ -167,7 +166,6 @@ async def predict():
         if result.returncode != 0:
             return {"success": False, "error": f"Prediction failed: {result.stderr}"}
             
-        # Parse the output to get prediction
         try:
             predicted_cpu = float(result.stdout.strip())
             need_new_instance = predicted_cpu > 80.0
