@@ -74,13 +74,27 @@ class CPUPercentagePredictor:
         test_predict = self.scaler.inverse_transform(test_predict)
         Y_test_inv = self.scaler.inverse_transform([Y_test])
         
-        # Calculate metrics
-        print('Train Mean Absolute Error:', mean_absolute_error(Y_train_inv[0], train_predict[:,0]))
-        print('Train Root Mean Squared Error:', np.sqrt(mean_squared_error(Y_train_inv[0], train_predict[:,0])))
-        print('Test Mean Absolute Error:', mean_absolute_error(Y_test_inv[0], test_predict[:,0]))
-        print('Test Root Mean Squared Error:', np.sqrt(mean_squared_error(Y_test_inv[0], test_predict[:,0])))
+        # Calculate and store metrics
+        self.metrics = {
+            'train_mae': mean_absolute_error(Y_train_inv[0], train_predict[:,0]),
+            'train_rmse': np.sqrt(mean_squared_error(Y_train_inv[0], train_predict[:,0])),
+            'test_mae': mean_absolute_error(Y_test_inv[0], test_predict[:,0]),
+            'test_rmse': np.sqrt(mean_squared_error(Y_test_inv[0], test_predict[:,0]))
+        }
         
-        return history
+        # Store predictions for plotting
+        self.train_predictions = train_predict
+        self.test_predictions = test_predict
+        self.Y_train = Y_train_inv[0]
+        self.Y_test = Y_test_inv[0]
+        
+        # Print metrics
+        print('Train Mean Absolute Error:', self.metrics['train_mae'])
+        print('Train Root Mean Squared Error:', self.metrics['train_rmse'])
+        print('Test Mean Absolute Error:', self.metrics['test_mae'])
+        print('Test Root Mean Squared Error:', self.metrics['test_rmse'])
+        
+        return history, self.metrics
         
     def predict_next_day(self, intervals=24):
         """
@@ -126,27 +140,47 @@ class CPUPercentagePredictor:
 
 if __name__ == "__main__":
     predictor = CPUPercentagePredictor()
-    history = predictor.train()
+    history, metrics = predictor.train()
     
     # Plot training history
-    plt.figure(figsize=(10,6))
+    plt.figure(figsize=(15,5))
+    plt.subplot(1,2,1)
     plt.plot(history.history['loss'], label='Train Loss')
     plt.plot(history.history['val_loss'], label='Test Loss')
     plt.title('Model Loss During Training')
     plt.ylabel('Loss')
     plt.xlabel('Epochs')
     plt.legend()
+    
+    # Plot actual vs predicted values for test set
+    plt.subplot(1,2,2)
+    plt.plot(predictor.Y_test[:100], label='Actual', color='blue')
+    plt.plot(predictor.test_predictions[:100], label='Predicted', color='red')
+    plt.title('Actual vs Predicted Values (First 100 Test Samples)')
+    plt.ylabel('CPU Usage (%)')
+    plt.xlabel('Time Steps')
+    plt.legend()
+    plt.tight_layout()
     plt.show()
     
-    # Make predictions for next 24 hours
+    # Print detailed metrics
+    print("\nDetailed Model Performance Metrics:")
+    print(f"Training Set Performance:")
+    print(f"- Mean Absolute Error: {metrics['train_mae']:.2f}%")
+    print(f"- Root Mean Squared Error: {metrics['train_rmse']:.2f}%")
+    print(f"\nTest Set Performance:")
+    print(f"- Mean Absolute Error: {metrics['test_mae']:.2f}%")
+    print(f"- Root Mean Squared Error: {metrics['test_rmse']:.2f}%")
+    
+    # Make and visualize predictions for next 24 hours
     predictions, timestamps = predictor.predict_next_day()
     
-    # Plot predictions
     plt.figure(figsize=(12,6))
-    plt.plot(timestamps, predictions, marker='o')
+    plt.plot(timestamps, predictions, marker='o', linestyle='-', linewidth=2)
     plt.title('CPU Usage Predictions for Next 24 Hours')
     plt.xlabel('Time')
     plt.ylabel('CPU Usage (%)')
+    plt.grid(True)
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
