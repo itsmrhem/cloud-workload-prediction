@@ -11,6 +11,7 @@ import os
 import tensorflow as tf
 import joblib
 import numpy as np
+import subprocess
 
 app = FastAPI()
 
@@ -96,8 +97,7 @@ async def fetch_logs():
 
         # Convert to CSV and save
         if response['MetricDataResults'] and response['MetricDataResults'][0]['Values']:
-            csv_filename = f"predict/cloudwatch_data_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.csv"
-            with open(csv_filename, 'w', newline='') as csvfile:
+            with open('predict/cloudwatch.csv', 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(['timestamp', 'cpu_usage'])
                 
@@ -159,36 +159,26 @@ def get_recent_cpu_data(cloudwatch_client):
 @app.get("/predict")
 async def predict():
     try:
-        if not aws_credentials["access_key"] or not aws_credentials["secret_key"]:
-            return {"success": False, "error": "AWS credentials not set"}
+        # Run the LSTM predictor script
+        result = subprocess.run(['python', 'models/lstm_predictor_percent.py'], 
+                              capture_output=True, 
+                              text=True)
+        
+        if result.returncode != 0:
+            return {"success": False, "error": f"Prediction failed: {result.stderr}"}
             
-        cloudwatch = boto3.client(
-            'cloudwatch',
-            aws_access_key_id=aws_credentials["access_key"],
-            aws_secret_access_key=aws_credentials["secret_key"],
-            region_name=region
-        )
-        
-        recent_values = get_recent_cpu_data(cloudwatch)
-        print(recent_values)
-        if not recent_values:
-            return {"success": False, "error": "No recent CPU data available"}
-        
-        predictor = LSTMPredictor()
-        if os.path.exists('models/lstm_model.h5'):
-            predictor.model = tf.keras.models.load_model('models/lstm_model.h5')
-            predictor.scaler = joblib.load('models/scaler.save')
-        else:
-            return {"success": False, "error": "Model not trained yet"}
-        
-        predicted_cpu = predictor.predict_next(recent_values)
-        need_new_instance = predicted_cpu > 80.0
-        
-        return {
-            "success": True,
-            "need_new_instance": need_new_instance,
-            "predicted_max_cpu": predicted_cpu
-        }
+        # Parse the output to get prediction
+        try:
+            predicted_cpu = float(result.stdout.strip())
+            need_new_instance = predicted_cpu > 80.0
+            
+            return {
+                "success": True,
+                "need_new_instance": need_new_instance,
+                "predicted_max_cpu": predicted_cpu
+            }
+        except ValueError as e:
+            return {"success": False, "error": f"Failed to parse prediction: {str(e)}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 

@@ -8,6 +8,8 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 import seaborn as sns
+import sys
+import os
 class CPUPercentagePredictor:
     def __init__(self):
         self.model = None
@@ -124,45 +126,25 @@ class CPUPercentagePredictor:
         return predictions, timestamps
 
 if __name__ == "__main__":
-    predictor = CPUPercentagePredictor()
-    history, metrics = predictor.train()
-    plt.figure(figsize=(15,5))
-    plt.subplot(1,2,1)
-    plt.plot(history.history['loss'], label='Train Loss')
-    plt.plot(history.history['val_loss'], label='Test Loss')
-    plt.title('Model Loss During Training')
-    plt.ylabel('Loss')
-    plt.xlabel('Epochs')
-    plt.legend()
-
-    plt.subplot(1,2,2)
-    plt.plot(predictor.Y_test[:100], label='Actual', color='blue')
-    plt.plot(predictor.test_predictions[:100], label='Predicted', color='red')
-    plt.title('Actual vs Predicted Values (First 100 Test Samples)')
-    plt.ylabel('CPU Usage (%)')
-    plt.xlabel('Time Steps')
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
-    
-    print("\nDetailed Model Performance Metrics:")
-    print(f"Training Set Performance:")
-    print(f"- Mean Absolute Error: {metrics['train_mae']:.2f}%")
-    print(f"- Root Mean Squared Error: {metrics['train_rmse']:.2f}%")
-    print(f"- Accuracy: {metrics['train_accuracy']:.2f}%")
-    print(f"\nTest Set Performance:")
-    print(f"- Mean Absolute Error: {metrics['test_mae']:.2f}%")
-    print(f"- Root Mean Squared Error: {metrics['test_rmse']:.2f}%")
-    print(f"- Accuracy: {metrics['test_accuracy']:.2f}%")
-    
-    predictions, timestamps = predictor.predict_next_day()
-    
-    plt.figure(figsize=(12,6))
-    plt.plot(timestamps, predictions, marker='o', linestyle='-', linewidth=2)
-    plt.title('CPU Usage Predictions for Next 24 Hours')
-    plt.xlabel('Time')
-    plt.ylabel('CPU Usage (%)')
-    plt.grid(True)
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.show()
+    try:
+        # Load the model
+        predictor = CPUPercentagePredictor()
+        if not os.path.exists('models/lstm_model.h5'):
+            raise FileNotFoundError("Model file not found")
+        
+        predictor.model = tf.keras.models.load_model('models/lstm_model.h5')
+        predictor.scaler = joblib.load('models/scaler.save')
+        
+        # Read the latest data
+        df = pd.read_csv('predict/cloudwatch.csv')
+        recent_values = df.cpu_usage.values[-predictor.look_back:].astype('float32')
+        
+        # Make prediction
+        predicted_cpu = predictor.predict_next(recent_values)
+        
+        # Print just the prediction value for the FastAPI endpoint to parse
+        print(f"{predicted_cpu}")
+        
+    except Exception as e:
+        print(f"Error: {str(e)}", file=sys.stderr)
+        sys.exit(1)
