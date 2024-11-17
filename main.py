@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 import boto3
 from datetime import datetime, timedelta
 import json
-from models.lstm_predictor import LSTMPredictor
+from models.lstm_predictor_percent import LSTMPredictor
 from utils.data_processor import get_recent_cpu_data
 import os
 import tensorflow as tf
