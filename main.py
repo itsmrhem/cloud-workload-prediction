@@ -169,14 +169,18 @@ async def predict():
             return {"success": False, "error": f"Prediction failed: {result.stderr}"}
             
         try:
-            predicted_cpu = float(result.stdout.strip())
-            need_new_instance = predicted_cpu > 80.0
-            
-            return {
-                "success": True,
-                "need_new_instance": need_new_instance,
-                "predicted_max_cpu": predicted_cpu
-            }
+            output_lines = result.stdout.strip().split('\n')
+            for line in output_lines:
+                if line.startswith("Next 15 minutes prediction:"):
+                    predicted_cpu = float(line.split(":")[1].strip())
+                    need_new_instance = predicted_cpu > 80.0
+                    
+                    return {
+                        "success": True,
+                        "need_new_instance": need_new_instance,
+                        "predicted_max_cpu": predicted_cpu
+                    }
+            return {"success": False, "error": "Could not find prediction in output"}
         except ValueError as e:
             return {"success": False, "error": f"Failed to parse prediction: {str(e)}"}
     except Exception as e:
