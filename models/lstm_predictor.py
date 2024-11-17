@@ -17,26 +17,22 @@ from sklearn.metrics import mean_absolute_error
 from keras.callbacks import EarlyStopping
 from statsmodels.tsa.stattools import adfuller
 
-# Load both datasets
-df_mhz = pd.read_csv('1.csv')
-df_percent = pd.read_csv('2.csv')
+df = pd.read_csv('1.csv')
+print(df.dtypes)
+df.head()
 
-# Process MHz dataset
-df_mhz['Timestamp [ms]'] = pd.to_datetime(df_mhz['Timestamp [ms]'].index,unit='s')
-df_mhz = df_mhz.iloc[:,[0,3]]
-df_mhz.columns = ['time','cpu_usage']
+df=pd.read_csv('1.csv')
 
-# Process percentage dataset
-df_percent['timestamp'] = pd.to_datetime(df_percent['timestamp'])
-print("MHz Dataset:")
-print(df_mhz.head())
-print("\nPercentage Dataset:")
-print(df_percent.head())
+df['Timestamp [ms]'] = pd.to_datetime(df['Timestamp [ms]'].index,unit='s')
 
-# Use the percentage dataset for predictions
-df = df_percent.copy()
-df.columns = ['time', 'cpu_usage']
-print("\nUsing percentage dataset for predictions:")
+df.head(4)
+df.dtypes
+type(df.index)
+print(df.shape)
+df.columns
+df=df.iloc[:,[0,3]]
+
+df.columns=['time','cpu_usage']
 print(df.head(10))
 dataset = df.cpu_usage.values #numpy.ndarray
 dataset = dataset.astype('float32')
