@@ -84,6 +84,47 @@ print('Train Mean Absolute Error:', mean_absolute_error(Y_train[0], train_predic
 print('Train Root Mean Squared Error:',np.sqrt(mean_squared_error(Y_train[0], train_predict[:,0])))
 print('Test Mean Absolute Error:', mean_absolute_error(Y_test[0], test_predict[:,0]))
 print('Test Root Mean Squared Error:',np.sqrt(mean_squared_error(Y_test[0], test_predict[:,0])))
+
+# Function to predict next day's CPU usage at different intervals
+def predict_next_day(recent_values, model, scaler, intervals=24):
+    """
+    Predict CPU usage for next day at specified intervals
+    Args:
+        recent_values: Recent CPU usage values
+        model: Trained LSTM model
+        scaler: Fitted MinMaxScaler
+        intervals: Number of predictions to make (default 24 for hourly predictions)
+    Returns:
+        List of predicted CPU usage values
+    """
+    predictions = []
+    timestamps = []
+    current_time = datetime.now()
+    
+    # Use last 30 values for initial prediction
+    current_sequence = np.array(recent_values[-30:])
+    
+    for i in range(intervals):
+        # Reshape sequence for prediction
+        sequence = np.reshape(current_sequence, (1, 1, len(current_sequence)))
+        
+        # Get prediction
+        pred = model.predict(sequence, verbose=0)
+        
+        # Inverse transform to get actual value
+        pred = scaler.inverse_transform(pred)[0][0]
+        
+        # Calculate timestamp for this prediction
+        pred_time = current_time + timedelta(hours=i+1)
+        
+        predictions.append(pred)
+        timestamps.append(pred_time.strftime("%Y-%m-%d %H:%M:%S"))
+        
+        # Update sequence for next prediction
+        current_sequence = np.append(current_sequence[1:], pred)
+    
+    return predictions, timestamps
+
 plt.figure(figsize=(8,4))
 plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Test Loss')
