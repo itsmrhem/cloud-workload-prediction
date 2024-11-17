@@ -79,7 +79,6 @@ class CPUPercentagePredictor:
         return history, self.metrics
         
     def predict_next(self, recent_values):
-        """Predict next CPU usage value based on recent values"""
         if len(recent_values) < self.look_back:
             raise ValueError(f"Need at least {self.look_back} recent values")
             
