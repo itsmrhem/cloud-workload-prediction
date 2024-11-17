@@ -108,7 +108,9 @@ async def fetch_logs():
                 data_pairs = sorted(zip(timestamps, values), key=lambda x: x[0])
                 
                 for timestamp, value in data_pairs:
-                    writer.writerow([timestamp, value])
+                    # Convert timestamp to desired format without timezone info
+                    formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
+                    writer.writerow([formatted_timestamp, value])
 
         return {"success": True, "data": response['MetricDataResults']}
     except Exception as e:
