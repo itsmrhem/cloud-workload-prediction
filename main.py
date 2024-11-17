@@ -72,8 +72,6 @@ async def fetch_logs():
                     'ReturnData': True
                 }
             ],
-            StartTime=datetime.utcnow() - timedelta(hours=1),
-            EndTime=datetime.utcnow()
         )
         
         print("\n=== CloudWatch Response ===")
