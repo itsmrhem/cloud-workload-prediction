@@ -1,6 +1,7 @@
 import numpy as np 
 import pandas as pd
 from datetime import datetime, timedelta
+import tensorflow as tf
 from tensorflow.keras.models import Sequential 
 from keras.layers import Dense, LSTM, Dropout
 from sklearn.preprocessing import MinMaxScaler
@@ -10,6 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
 import os
+import joblib
 class CPUPercentagePredictor:
     def __init__(self):
         self.model = None
