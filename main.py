@@ -167,9 +167,12 @@ async def predict():
         
         if result.returncode != 0:
             return {"success": False, "error": f"Prediction failed: {result.stderr}"}
+        
+        print(result)
             
         try:
             output_lines = result.stdout.strip().split('\n')
+            print(output_lines)
             for line in output_lines:
                 if line.startswith("Next 15 minutes prediction:"):
                     predicted_cpu = float(line.split(":")[1].strip())
@@ -192,7 +195,8 @@ async def launch_instance(ami_id: str = Form(...), instance_type: str = Form(...
         ec2 = boto3.client(
             'ec2',
             aws_access_key_id=aws_credentials["access_key"],
-            aws_secret_access_key=aws_credentials["secret_key"]
+            aws_secret_access_key=aws_credentials["secret_key"],
+            region_name=region
         )
 
         print("\n=== Launching EC2 Instance ===")
