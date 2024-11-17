@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS CloudWatch Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div id="toast-container" class="toast-container"></div>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">AWS CloudWatch Analytics</h1>
+        
+        <!-- AWS Credentials Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">AWS Credentials</h5>
+            </div>
+            <div class="card-body">
+                <form id="credentials-form">
+                    <div class="mb-3">
+                        <label for="access-key" class="form-label">Access Key</label>
+                        <input type="text" class="form-control" id="access-key" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="secret-key" class="form-label">Secret Key</label>
+                        <input type="password" class="form-control" id="secret-key" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Set Credentials</button>
+                    <button type="button" id="verify-credentials-btn" class="btn btn-secondary ms-2" disabled>Verify Credentials</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- CloudWatch Logs Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">CloudWatch Logs</h5>
+            </div>
+            <div class="card-body">
+                <button id="fetch-logs-btn" class="btn btn-secondary" disabled>Fetch CloudWatch Logs</button>
+                <div id="logs-status" class="mt-3"></div>
+            </div>
+        </div>
+
+        <!-- Predict Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Predict</h5>
+            </div>
+            <div class="card-body">
+                <button id="predict-btn" class="btn btn-info" disabled>Check System Status</button>
+                <div id="prediction-result" class="mt-3"></div>
+            </div>
+        </div>
+
+        <!-- Instance Launch Form -->
+        <div class="card mb-4" id="launch-section" style="display: none;">
+            <div class="card-header">
+                <h5 class="mb-0">Launch New Instance</h5>
+            </div>
+            <div class="card-body">
+                <form id="launch-form">
+                    <div class="mb-3">
+                        <label for="ami-id" class="form-label">AMI ID</label>
+                        <input type="text" class="form-control" id="ami-id" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="instance-type" class="form-label">Instance Type</label>
+                        <select class="form-select" id="instance-type" required>
+                            <option value="t2.micro">t2.micro</option>
+                            <option value="t2.small">t2.small</option>
+                            <option value="t2.medium">t2.medium</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">Launch Instance</button>
+                </form>
+                <div id="launch-status" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+</html>
