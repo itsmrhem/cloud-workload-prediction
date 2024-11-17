@@ -1,3 +1,4 @@
+import csv
 from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -92,6 +93,22 @@ async def fetch_logs():
         print("\n=== CloudWatch Response ===")
         print(json.dumps(response, indent=2, default=str))
         print("==========================\n")
+
+        # Convert to CSV and save
+        if response['MetricDataResults'] and response['MetricDataResults'][0]['Values']:
+            csv_filename = f"predict/cloudwatch_data_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.csv"
+            with open(csv_filename, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['timestamp', 'cpu_usage'])
+                
+                timestamps = response['MetricDataResults'][0]['Timestamps']
+                values = response['MetricDataResults'][0]['Values']
+                
+                # Sort by timestamp
+                data_pairs = sorted(zip(timestamps, values), key=lambda x: x[0])
+                
+                for timestamp, value in data_pairs:
+                    writer.writerow([timestamp, value])
 
         return {"success": True, "data": response['MetricDataResults']}
     except Exception as e:
