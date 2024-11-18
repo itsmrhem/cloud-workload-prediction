@@ -95,7 +95,7 @@ class CPUPercentagePredictor:
         return pred
         
     def predict_next_day(self, intervals=24):
-        df = pd.read_csv('2.csv')
+        df = pd.read_csv('predict/cloudwatch.csv')
         recent_values = df.cpu_usage.values[-self.look_back:].astype('float32')
         
         predictions = []
@@ -122,7 +122,6 @@ if __name__ == "__main__":
     predictor = CPUPercentagePredictor()
     history, metrics = predictor.train()
     
-    # Get the latest prediction
     df = pd.read_csv('predict/cloudwatch.csv')
     recent_values = df.cpu_usage.values[-30:].astype('float32')
     predicted_value = predictor.predict_next(recent_values)
