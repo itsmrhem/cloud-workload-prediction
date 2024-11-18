@@ -171,11 +171,10 @@ async def predict():
             output_lines = result.stdout.strip().split('\n')
             print("OPTLINES", output_lines)
             for line in output_lines:
-                if line.startswith("Next 15 minutes prediction:"):
+                if line.startswith("next 15 minutes pred"):
                     predicted_cpu = float(line.split(":")[1].strip())
                     print("predicted_cpu", predicted_cpu)
-                    need_new_instance = predicted_cpu > 80.0
-                    
+                    need_new_instance = True
                     return {
                         "success": True,
                         "need_new_instance": need_new_instance,
