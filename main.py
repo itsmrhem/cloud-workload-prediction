@@ -31,12 +31,12 @@ async def home(request: Request):
 async def set_credentials(access_key: str = Form(...), secret_key: str = Form(...)):
     aws_credentials["access_key"] = access_key
     aws_credentials["secret_key"] = secret_key
-    return {"message": "Credentials set successfully"}
+    return {"message": "Creds set successfully"}
 
 @app.get("/verify-credentials")
 async def verify_credentials():
     if not aws_credentials["access_key"] or not aws_credentials["secret_key"]:
-        return {"success": False, "error": "AWS credentials not set"}
+        return {"success": False, "error": "AWS creds not set"}
     
     try:
         ec2 = boto3.client(
@@ -49,7 +49,7 @@ async def verify_credentials():
         print("\n=== AWS Credential Verification Response ===")
         print(json.dumps(response, indent=2, default=str))
         print("========================================\n")
-        return {"success": True, "message": "Credentials are valid"}
+        return {"success": True, "message": "Creds are valid"}
     except Exception as e:
         print("\n=== AWS Credential Verification ERROR ===")
         print(f"Error type: {type(e).__name__}")
@@ -95,7 +95,6 @@ async def fetch_logs():
         print(json.dumps(response, indent=2, default=str))
         print("==========================\n")
 
-        # Convert to CSV and save
         if response['MetricDataResults'] and response['MetricDataResults'][0]['Values']:
             with open('predict/cloudwatch.csv', 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
@@ -104,11 +103,9 @@ async def fetch_logs():
                 timestamps = response['MetricDataResults'][0]['Timestamps']
                 values = response['MetricDataResults'][0]['Values']
                 
-                # Sort by timestamp
                 data_pairs = sorted(zip(timestamps, values), key=lambda x: x[0])
                 
                 for timestamp, value in data_pairs:
-                    # Convert timestamp to desired format without timezone info
                     formatted_timestamp = timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
                     writer.writerow([formatted_timestamp, value])
 
@@ -168,14 +165,15 @@ async def predict():
         if result.returncode != 0:
             return {"success": False, "error": f"Prediction failed: {result.stderr}"}
         
-        print(result)
+        print("res", result)
             
         try:
             output_lines = result.stdout.strip().split('\n')
-            print(output_lines)
+            print("OPTLINES", output_lines)
             for line in output_lines:
                 if line.startswith("Next 15 minutes prediction:"):
                     predicted_cpu = float(line.split(":")[1].strip())
+                    print("predicted_cpu", predicted_cpu)
                     need_new_instance = predicted_cpu > 80.0
                     
                     return {
@@ -215,7 +213,7 @@ async def launch_instance(ami_id: str = Form(...), instance_type: str = Form(...
         print("==========================\n")
 
         instance_id = response['Instances'][0]['InstanceId']
-        print(f"Successfully launched instance: {instance_id}")
+        print(f"Successfully  instance id{instance_id}")
         
         return {
             "success": True,
