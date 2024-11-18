@@ -12,14 +12,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 fetchLogsBtn.disabled = false;
-                showMessage('logs-status', 'Credentials verified successfully!', true);
+                showMessage('logs-status', 'Creds verified Now fetch logs', true);
             } else {
                 fetchLogsBtn.disabled = true;
-                showMessage('logs-status', 'Invalid credentials: ' + data.error, false);
+                showMessage('logs-status', 'Invalid creds: ' + data.error, false);
             }
         } catch (error) {
             fetchLogsBtn.disabled = true;
-            showMessage('logs-status', 'Error verifying credentials: ' + error, false);
+            showMessage('logs-status', 'Error verifying creds: ' + error, false);
         }
     });
 
@@ -43,10 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             if (data.message) {
                 document.getElementById('verify-credentials-btn').disabled = false;
-                showMessage('logs-status', 'Credentials set successfully!', true);
+                showMessage('logs-status', 'Creds set success', true);
             }
         } catch (error) {
-            showMessage('logs-status', 'Failed to set credentials: ' + error, false);
+            showMessage('logs-status', 'Creds set failed:' + error, false);
         }
     });
 
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 predictBtn.disabled = false;
-                showMessage('logs-status', 'CloudWatch logs fetched successfully!', true);
+                showMessage('logs-status', 'Cloudwatch logs fetch success and saved', true);
             } else {
                 predictBtn.disabled = true;
                 showMessage('logs-status', data.error, false);
@@ -74,10 +74,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (data.success) {
-                const message = `Current CPU utilization is high: ${data.predicted_max_cpu.toFixed(2)}%<br>`;
+                const message = `Predicted CPU Util % in the next 15 min: ${data.predicted_max_cpu.toFixed(2)}%<br>`;
                 showMessage('prediction-result', message, true);
                 launchSection.style.display = 'block';
-                showMessage('prediction-result', message + 'Recommendation: Launch new instance', true);
+                showMessage('prediction-result', message + 'Recommended to Launch new instance. You can launch instance from below form.', true);
             } else {
                 showMessage('prediction-result', 'Prediction failed: ' + data.error, false);
             }
@@ -105,12 +105,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const data = await response.json();
             if (data.success) {
-                showMessage('launch-status', `Instance launched successfully! Instance ID: ${data.instance_id}`, true);
+                showMessage('launch-status', `Instance launched successInstance ID: ${data.instance_id}`, true);
             } else {
-                showMessage('launch-status', 'Failed to launch instance: ' + data.error, false);
+                showMessage('launch-status', 'Instance launch failed:' + data.error, false);
             }
         } catch (error) {
-            showMessage('launch-status', 'Error launching instance: ' + error, false);
+            showMessage('launch-status', 'launching instance failed: ' + error, false);
         }
     });
 

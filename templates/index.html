@@ -20,15 +20,15 @@
             <div class="card-body">
                 <form id="credentials-form">
                     <div class="mb-3">
-                        <label for="access-key" class="form-label">Access Key</label>
+                        <label for="access-key" class="form-label">AWS API Access Key</label>
                         <input type="text" class="form-control" id="access-key" required>
                     </div>
                     <div class="mb-3">
-                        <label for="secret-key" class="form-label">Secret Key</label>
+                        <label for="secret-key" class="form-label">AWS API Secret Key</label>
                         <input type="password" class="form-control" id="secret-key" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Set Credentials</button>
-                    <button type="button" id="verify-credentials-btn" class="btn btn-secondary ms-2" disabled>Verify Credentials</button>
+                    <button type="button" id="verify-credentials-btn" class="btn btn-secondary ms-2" disabled>Verify Creds</button>
                 </form>
             </div>
         </div>
@@ -50,7 +50,7 @@
                 <h5 class="mb-0">Predict</h5>
             </div>
             <div class="card-body">
-                <button id="predict-btn" class="btn btn-info" disabled>Check System Status</button>
+                <button id="predict-btn" class="btn btn-info" disabled>Predict </button>
                 <div id="prediction-result" class="mt-3"></div>
             </div>
         </div>
